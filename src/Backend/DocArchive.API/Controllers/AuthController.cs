@@ -11,10 +11,12 @@ namespace DocArchive.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IUserService _userService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IUserService userService)
     {
         _authService = authService;
+        _userService = userService;
     }
 
     /// <summary>
@@ -86,6 +88,28 @@ public class AuthController : ControllerBase
             FullName = fullName,
             Role = role,
             Permissions = int.Parse(permissions ?? "0")
+        }));
+    }
+
+    /// <summary>
+    /// Update current user's profile (full name only)
+    /// </summary>
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<object>>> UpdateProfile([FromBody] UpdateProfileRequest request)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await _userService.UpdateProfileAsync(userId, request);
+        if (result == null)
+            return NotFound(ApiResponse<object>.Fail("User not found"));
+
+        return Ok(ApiResponse<object>.Ok(new
+        {
+            result.Id,
+            result.Username,
+            result.FullName,
+            result.Role,
+            Permissions = (int)result.Permissions
         }));
     }
 

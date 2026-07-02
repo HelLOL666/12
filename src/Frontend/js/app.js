@@ -178,6 +178,31 @@ function navigate(page) {
   if (page === 'documents') fetchDocuments();
   if (page === 'users') fetchUsers();
   if (page === 'audit') fetchAuditLogs();
+  if (page === 'settings') initSettings();
+}
+
+/* ===== Profile ===== */
+function initSettings() {
+  const input = $('profile-fullname');
+  if (input && currentUser) input.value = currentUser.FullName || currentUser.fullName || '';
+}
+
+async function saveProfile() {
+  const fullName = $('profile-fullname').value.trim();
+  if (!fullName) { showMsg('Введите ФИО'); return; }
+  try {
+    const data = await api('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify({ fullName }),
+    });
+    if (data && data.success) {
+      currentUser.FullName = data.data.fullName || fullName;
+      currentUser.fullName = data.data.fullName || fullName;
+      showMsg('ФИО сохранено');
+    }
+  } catch (e) {
+    showMsg('Ошибка сохранения профиля');
+  }
 }
 
 /* ===== Documents ===== */
@@ -736,9 +761,17 @@ function bindEvents() {
     btn.addEventListener('click', () => setTheme(btn.dataset.theme));
   });
 
-  // Modal backdrop close
+  // Save profile
+  $('save-profile-btn').addEventListener('click', saveProfile);
+
+  // Modal backdrop close (track mousedown to avoid closing when selecting text)
+  let modalMouseDownTarget = null;
+  $('modal').addEventListener('mousedown', (e) => {
+    modalMouseDownTarget = e.target;
+  });
   $('modal').addEventListener('click', (e) => {
-    if (e.target.id === 'modal') closeModal();
+    if (e.target.id === 'modal' && modalMouseDownTarget && modalMouseDownTarget.id === 'modal') closeModal();
+    modalMouseDownTarget = null;
   });
 
   // Modal actions

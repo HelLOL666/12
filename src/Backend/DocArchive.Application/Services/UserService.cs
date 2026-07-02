@@ -92,4 +92,17 @@ public class UserService : IUserService
         await _unitOfWork.SaveChangesAsync();
         return true;
     }
+
+    public async Task<UserDto?> UpdateProfileAsync(Guid id, UpdateProfileRequest request)
+    {
+        var user = await _unitOfWork.Users.GetByIdWithRoleAsync(id);
+        if (user == null) return null;
+
+        user.FullName = request.FullName;
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        var updated = await _unitOfWork.Users.GetByIdWithRoleAsync(id);
+        return _mapper.Map<UserDto>(updated!);
+    }
 }
