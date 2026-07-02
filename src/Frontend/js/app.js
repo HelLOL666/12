@@ -178,31 +178,6 @@ function navigate(page) {
   if (page === 'documents') fetchDocuments();
   if (page === 'users') fetchUsers();
   if (page === 'audit') fetchAuditLogs();
-  if (page === 'settings') initSettings();
-}
-
-/* ===== Profile ===== */
-function initSettings() {
-  const input = $('profile-fullname');
-  if (input && currentUser) input.value = currentUser.FullName || currentUser.fullName || '';
-}
-
-async function saveProfile() {
-  const fullName = $('profile-fullname').value.trim();
-  if (!fullName) { showMsg('Введите ФИО'); return; }
-  try {
-    const data = await api('/auth/profile', {
-      method: 'PUT',
-      body: JSON.stringify({ fullName }),
-    });
-    if (data && data.success) {
-      currentUser.FullName = data.data.fullName || fullName;
-      currentUser.fullName = data.data.fullName || fullName;
-      showMsg('ФИО сохранено');
-    }
-  } catch (e) {
-    showMsg('Ошибка сохранения профиля');
-  }
 }
 
 /* ===== Documents ===== */
@@ -301,6 +276,12 @@ function renderViewer() {
   $('viewer-download').classList.toggle('hidden', !hasPermission(PERM.Download));
   const delBtn = $('viewer-delete');
   if (delBtn) delBtn.classList.toggle('hidden', !hasPermission(PERM.Delete));
+
+  // Watermark with username
+  const watermark = document.createElement('div');
+  watermark.className = 'viewer-watermark';
+  watermark.textContent = (currentUser.fullName || currentUser.FullName || currentUser.username || '').repeat(20);
+  $('viewer-pdf').appendChild(watermark);
 
   renderVersions();
 }
@@ -636,12 +617,26 @@ function bindEvents() {
   $('add-doc-btn').addEventListener('click', () => {
     openModal(
       'Загрузить документ',
+      '<label>Файл (PDF, CDW, SPW, M3D, DXF)</label><input type="file" id="new-file" accept=".pdf,.cdw,.spw,.m3d,.dxf">' +
       '<label>Номер документа</label><input id="new-number" placeholder="СБ.001.01">' +
-      '<label>Название</label><input id="new-name" placeholder="Сборочный чертёж">' +
-      '<label>Файл (PDF, CDW, SPW, M3D, DXF)</label><input type="file" id="new-file" accept=".pdf,.cdw,.spw,.m3d,.dxf">',
+      '<label>Название</label><input id="new-name" placeholder="Сборочный чертёж">',
       '<button type="button" class="btn" data-act="cancel">Отмена</button>' +
       '<button type="button" class="btn" data-act="upload-doc">Загрузить</button>'
     );
+    // Auto-fill number from filename when file is selected
+    setTimeout(() => {
+      const fileInput = $('new-file');
+      if (fileInput) {
+        fileInput.addEventListener('change', () => {
+          if (fileInput.files[0]) {
+            const name = fileInput.files[0].name;
+            const noExt = name.replace(/\.[^.]+$/, '');
+            if (!$('new-number').value.trim()) $('new-number').value = noExt;
+            if (!$('new-name').value.trim()) $('new-name').value = noExt;
+          }
+        });
+      }
+    }, 0);
   });
 
   // Open document
@@ -761,9 +756,6 @@ function bindEvents() {
     btn.addEventListener('click', () => setTheme(btn.dataset.theme));
   });
 
-  // Save profile
-  $('save-profile-btn').addEventListener('click', saveProfile);
-
   // Modal backdrop close (track mousedown to avoid closing when selecting text)
   let modalMouseDownTarget = null;
   $('modal').addEventListener('mousedown', (e) => {
@@ -833,6 +825,20 @@ function bindEvents() {
       createUser(formData);
       return;
     }
+  });
+
+  // Screenshot protection: block PrintScreen, Ctrl+P, Ctrl+Shift+S, right-click on viewer
+  document.addEventListener('keydown', (e) => {
+    const viewerActive = $('page-viewer')?.classList.contains('active');
+    if (!viewerActive) return;
+    if (e.key === 'PrintScreen') { e.preventDefault(); showMsg('Скриншоты запрещены'); }
+    if (e.ctrlKey && e.key === 'p') { e.preventDefault(); showMsg('Печать запрещена'); }
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') { e.preventDefault(); }
+    if (e.ctrlKey && e.key === 'c') { e.preventDefault(); showMsg('Копирование запрещено'); }
+  });
+  document.addEventListener('contextmenu', (e) => {
+    const viewerActive = $('page-viewer')?.classList.contains('active');
+    if (viewerActive) { e.preventDefault(); showMsg('Контекстное меню отключено'); }
   });
 }
 

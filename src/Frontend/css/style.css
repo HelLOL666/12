@@ -427,6 +427,32 @@ body {
 
 .comment-text { font-size: 0.875rem; }
 
+/* Watermark */
+.viewer-pdf {
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.viewer-watermark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 10;
+  overflow: hidden;
+  font-size: 14px;
+  color: rgba(150, 150, 150, 0.15);
+  line-height: 2.5;
+  word-spacing: 40px;
+  transform: rotate(-25deg);
+  transform-origin: center center;
+  white-space: normal;
+  padding: 20px;
+}
+
 @media (max-width: 768px) {
   .menu-btn { display: block; }
 
