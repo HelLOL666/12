@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDM — Хранение чертежей</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <section id="login-screen">
+    <div class="login-box">
+      <h1>PDM System</h1>
+      <p class="hint">Система хранения чертежей</p>
+      <form id="login-form">
+        <label>Логин</label>
+        <input type="text" value="admin" autocomplete="username">
+        <label>Пароль</label>
+        <input type="password" value="Admin123!" autocomplete="current-password">
+        <button type="submit" class="btn">Войти</button>
+      </form>
+    </div>
+  </section>
+
+  <div id="app" class="hidden">
+    <header class="header">
+      <div class="header-left">
+        <button type="button" class="menu-btn" id="menu-btn">☰</button>
+        <button type="button" class="site-title" id="home-btn">PDM System</button>
+      </div>
+      <nav class="header-nav" id="header-nav">
+        <a href="#" data-page="documents" class="nav-link active">Документы</a>
+        <a href="#" data-page="users" class="nav-link admin-only hidden">Пользователи</a>
+        <a href="#" data-page="audit" class="nav-link admin-only hidden">Журнал</a>
+        <a href="#" data-page="settings" class="nav-link">Настройки</a>
+        <button type="button" class="nav-link" id="logout-btn">Выход</button>
+      </nav>
+    </header>
+
+    <main class="main">
+      <section class="page active" id="page-documents">
+        <div class="page-head">
+          <h2>Документы</h2>
+          <div class="page-actions">
+            <input type="search" id="doc-search" placeholder="Поиск..." class="input">
+            <button type="button" class="btn" id="add-doc-btn">Добавить</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Номер</th>
+                <th>Название</th>
+                <th>Версия</th>
+                <th>Дата</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="documents-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="page" id="page-viewer">
+        <div class="viewer-top">
+          <button type="button" class="link" id="viewer-back">← Назад</button>
+          <div class="viewer-top-actions">
+            <button type="button" class="btn" id="viewer-download">Скачать</button>
+            <button type="button" class="btn" id="viewer-delete" style="color:#c00;border-color:#c00">Удалить</button>
+          </div>
+        </div>
+        <div class="viewer-tabs">
+          <button type="button" class="btn-sm active" data-viewer-tab="pdf-wrap">Просмотр</button>
+          <button type="button" class="btn-sm" data-viewer-tab="versions">Версии</button>
+          <button type="button" class="btn-sm" data-viewer-tab="comments">Замечания</button>
+        </div>
+        <div class="viewer-layout">
+          <aside class="viewer-info" id="viewer-info"></aside>
+          <div>
+            <div class="viewer-pdf-wrap viewer-tab-content" id="viewer-pdf-wrap">
+              <div class="viewer-zoom">
+                <button type="button" class="btn-sm" id="zoom-out">−</button>
+                <span id="zoom-label">100%</span>
+                <button type="button" class="btn-sm" id="zoom-in">+</button>
+              </div>
+              <div class="viewer-pdf" id="viewer-pdf"></div>
+            </div>
+            <div class="viewer-tab-content hidden" id="viewer-versions"></div>
+            <div class="viewer-tab-content hidden" id="viewer-comments"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-users">
+        <div class="page-head">
+          <h2>Пользователи</h2>
+          <div class="page-actions">
+            <button type="button" class="btn" id="create-user-btn">Создать</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Имя</th>
+                <th>Роль</th>
+                <th>Статус</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="page" id="page-audit">
+        <h2 class="page-title">Журнал действий</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Пользователь</th>
+                <th>Действие</th>
+                <th>Детали</th>
+                <th>IP</th>
+              </tr>
+            </thead>
+            <tbody id="audit-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <h2 class="page-title">Настройки</h2>
+        <div class="settings-block">
+          <p class="label">Тема</p>
+          <button type="button" class="btn-option active" data-theme="light">Светлая</button>
+          <button type="button" class="btn-option" data-theme="dark">Тёмная</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-bg hidden" id="modal">
+    <div class="modal-box">
+      <h3 id="modal-title"></h3>
+      <div id="modal-body"></div>
+      <div class="modal-actions" id="modal-actions"></div>
+    </div>
+  </div>
+
+  <p class="msg hidden" id="msg"></p>
+  <script src="js/app.js"></script>
+</body>
+</html>
